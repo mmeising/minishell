@@ -6,7 +6,7 @@
 /*   By: mmeising <mmeising@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/09 18:22:43 by mmeising          #+#    #+#             */
-/*   Updated: 2022/02/17 16:53:03 by mmeising         ###   ########.fr       */
+/*   Updated: 2022/02/25 17:05:45 by mmeising         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ char	**get_paths(char **envp)
 	while (envp[i] && (ft_strncmp(envp[i], "PATH=", 5) != 0))
 		i++;
 	if (envp[i] == NULL)
-		exit(EXIT_NO_PATHS);
+		error(NO_PATHS);
 	temp = ft_split(envp[i] + 5, ':');
 	i = ft_2d_char_len(temp);
 	paths = malloc(sizeof(*paths) * (i + 1));
@@ -73,15 +73,15 @@ int	piping(t_cmd *cmds, char **envp)
 	i = 0;
 	(void)envp;
 	paths = get_paths(envp);
-	// cmd_count = get_cmd_count(cmds);
-	// while (paths[i])
-	// {
-	// 	printf("%s\n", paths[i]);
-	// 	free(paths[i]);
-	// 	i++;
-	// }
-	// free(paths);
-	// printf("cmd_count: %i\n", cmd_count);
+	cmd_count = get_cmd_count(cmds);
+	while (paths[i])
+	{
+		printf("%s\n", paths[i]);
+		free(paths[i]);
+		i++;
+	}
+	free(paths);
+	printf("cmd_count: %i\n", cmd_count);
 	while (cmds)
 	{
 		if (pipe(fd) < 0)
@@ -89,11 +89,12 @@ int	piping(t_cmd *cmds, char **envp)
 		pid = fork();
 		if (pid < 0)
 			error(FORK);
-		
+		else
+			exit(4);
 	}
 	return (0);
 }
-
+/*
 int	main(int argc, char **argv, char **envp)
 {
 	t_cmd	*cmds;
@@ -102,14 +103,12 @@ int	main(int argc, char **argv, char **envp)
 	(void)argv;
 	cmds = malloc (sizeof(*cmds));
 	if (cmds == NULL)
-		return (E_MALLOC_FAIL);
-	cmds->infiles = NULL;
-	cmds->outfiles = NULL;
-	cmds->flag_here_doc = 0;
-	cmds->flag_append = 0;
+		return (5);
+	cmds->in_out_files = NULL;
 	cmds->cmd = ft_split("ls -l", ' ');
 	cmds->next = NULL;
 	piping(cmds, envp);
 	ft_free_2d_char(&(cmds->cmd));
 	free(cmds);
 }
+*/

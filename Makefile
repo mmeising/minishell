@@ -6,7 +6,7 @@
 #    By: mmeising <mmeising@student.42heilbronn.    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/11/27 22:33:42 by mmeising          #+#    #+#              #
-#    Updated: 2022/01/24 13:55:51 by mmeising         ###   ########.fr        #
+#    Updated: 2022/02/25 16:45:53 by mmeising         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ CC := gcc
 CFLAGS := -Wall -Wextra -Werror -fsanitize=leak
 
 SRCS :=	\
-	pipex.c
+	pipex.c error.c
 
 SRCS := $(SRCS:%=src/%)
 OBJ := $(SRCS:src/%.c=obj/%.o)
