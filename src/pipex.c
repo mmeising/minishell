@@ -6,7 +6,7 @@
 /*   By: mmeising <mmeising@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/09 18:22:43 by mmeising          #+#    #+#             */
-/*   Updated: 2022/02/25 17:05:45 by mmeising         ###   ########.fr       */
+/*   Updated: 2022/03/12 00:39:58 by mmeising         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,26 +62,69 @@ int	get_cmd_count(t_cmd	*cmd_list)
 	// at end: while (wait(NULL) != -1 || errno != ECHILD);
 }
 
+void	redirections(t_cmd *cmd)
+{
+	t_files	*red;
+
+	red = cmd->redirs;
+	while (red)
+	{
+		if (cmd->fd_in && (red->type == IN || red->type == HEREDOC))
+		{
+			close(cmd->fd_in);
+			cmd->fd_in = 0;
+		}
+		else if (cmd->fd_out > 2 && (red->type == OUT || red->type == APPEND))
+		{
+			close(cmd->fd_out);
+			cmd->fd_out = 0;
+		}
+		if (red->type == IN)
+			cmd->fd_in = open(red->file, O_RDONLY, 0644);
+		else if (red->type == HEREDOC)
+			do_heredoc();//heredoc behaviour, need to implement this
+		else if (red->type == OUT)
+			cmd->fd_out = open(red->file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		else if (red->type == APPEND)
+			cmd->fd_out = open(red->file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+		red = red->next;
+	}
+}
+
+//	close write-end of pipe and wait for child
+void	parent(int pid, int *fd)
+{
+	close(fd[1]);
+	waitpid(pid, NULL, 0);
+}
+
+//	go through all redirections, execve
+void	child(t_cmd *cmds, char **envp)
+{
+	if (cmds->redirs)
+		redirections(cmds);
+}
+
 int	piping(t_cmd *cmds, char **envp)
 {
 	char	**paths;
-	int		i;
-	int		cmd_count;
+	// int		i;
+	// int		cmd_count;
 	int		fd[2];
 	int		pid;
 
-	i = 0;
+	// i = 0;
 	(void)envp;
 	paths = get_paths(envp);
-	cmd_count = get_cmd_count(cmds);
-	while (paths[i])
-	{
-		printf("%s\n", paths[i]);
-		free(paths[i]);
-		i++;
-	}
-	free(paths);
-	printf("cmd_count: %i\n", cmd_count);
+	// cmd_count = get_cmd_count(cmds);
+	// while (paths[i])
+	// {
+	// 	printf("%s\n", paths[i]);
+	// 	free(paths[i]);
+	// 	i++;
+	// }
+	// free(paths);
+	// printf("cmd_count: %i\n", cmd_count);
 	while (cmds)
 	{
 		if (pipe(fd) < 0)
@@ -89,12 +132,17 @@ int	piping(t_cmd *cmds, char **envp)
 		pid = fork();
 		if (pid < 0)
 			error(FORK);
+		else if (pid == 0)
+			exit(0);//child
 		else
-			exit(4);
+		{
+			parent(pid, fd);
+			exit(4);//parent
+		}
 	}
 	return (0);
 }
-/*
+
 int	main(int argc, char **argv, char **envp)
 {
 	t_cmd	*cmds;
@@ -104,11 +152,10 @@ int	main(int argc, char **argv, char **envp)
 	cmds = malloc (sizeof(*cmds));
 	if (cmds == NULL)
 		return (5);
-	cmds->in_out_files = NULL;
+	cmds->redirs = NULL;
 	cmds->cmd = ft_split("ls -l", ' ');
 	cmds->next = NULL;
 	piping(cmds, envp);
 	ft_free_2d_char(&(cmds->cmd));
 	free(cmds);
 }
-*/

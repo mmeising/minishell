@@ -6,7 +6,7 @@
 /*   By: mmeising <mmeising@student.42heilbronn.    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/02/09 18:23:22 by mmeising          #+#    #+#             */
-/*   Updated: 2022/02/25 16:57:13 by mmeising         ###   ########.fr       */
+/*   Updated: 2022/03/12 00:37:04 by mmeising         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,18 +44,18 @@ typedef struct s_node
 
 typedef enum e_type
 {
-	INFILE,
-	OUTFILE,
+	IN,
+	OUT,
 	HEREDOC,
 	APPEND,
-	MALLOC,
-	NO_PATHS
 }	t_type;
 
 typedef enum e_error
 {
 	PIPE,
-	FORK
+	FORK,
+	MALLOC,
+	NO_PATHS
 }	t_error;
 
 typedef struct s_files
@@ -67,9 +67,11 @@ typedef struct s_files
 
 typedef struct s_cmd
 {
-	t_files			*in_out_files;
+	t_files			*redirs;
 	char			**cmd;
 	struct s_cmd	*next;
+	int				fd_in;
+	int				fd_out;
 }		t_cmd;
 
 void	error(t_error err);
